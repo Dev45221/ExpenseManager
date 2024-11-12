@@ -4,21 +4,31 @@ import { View, Text, StyleSheet, Alert, FlatList } from 'react-native';
 import { APPNAME, StorageKey } from '../constants/Constants';
 import ExpenseItem from '../components/ExpenseItem';
 
-const HomeScreen = () => {
+//@ts-ignore
+const HomeScreen = ({ navigation }) => {
     const [data, setData] = useState([]);
     const [show, setShow] = useState(false);
 
+    // useEffect(() => {
+    //     getExistingExp();
+    // });
+
     useEffect(() => {
-        getExistingExp();
-    }, [data]);
+        const unsubscribe = navigation.addListener('focus', () => {
+            getExistingExp();
+        });
+        return unsubscribe;
+    }, [navigation]);
 
     const getExistingExp = async () => {
         try {
             const existingData = await AsyncStorage.getItem(StorageKey);
             // console.log(JSON.parse(existingData!));
             const res = JSON.parse(existingData!);
-            setData(res);
-            setShow(true);
+            if (res) {
+                setData(res);
+                setShow(true);
+            }
         } catch (error) {
             console.error(error);
             Alert.alert(APPNAME, 'Something went wrong! ❌');
