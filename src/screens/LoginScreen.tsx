@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { APPNAME, textColor, textFamily, winHei, winWid } from '../constants/Constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
 import InputText from '../components/InputText';
 import { ButtonCom } from '../components/ButtonCom';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,7 +15,7 @@ const LoginScreen = ({ navigation }) => {
 
     useEffect(() => {
         getUserData();
-    }, []);
+    });
 
     const getUserData = async () => {
         try {
@@ -26,7 +25,6 @@ const LoginScreen = ({ navigation }) => {
             const { email, conPassword } = jsObj;
             if (email === null) {
                 console.log('New user');
-                Alert.alert(APPNAME, 'Welcome!');
             } else if (email != null) {
                 setStoredEmail(email.toString());
                 setStoredPassword(conPassword.toString());
@@ -42,7 +40,7 @@ const LoginScreen = ({ navigation }) => {
             Alert.alert(APPNAME, 'All fields are required! ❌');
         }
 
-        if (email == storedEmail && password == storedPassword) {
+        if (email === storedEmail && password === storedPassword) {
             Alert.alert(APPNAME, 'Successfully logged in ✅');
             navigation.navigate('Dashboard');
         } else {
