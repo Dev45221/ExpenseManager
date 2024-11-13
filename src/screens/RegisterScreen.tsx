@@ -2,9 +2,9 @@ import React from 'react';
 import { StyleSheet, Alert, ScrollView, View, Text, TouchableOpacity, Image } from 'react-native';
 import { APPNAME, textColor, textFamily, winWid } from '../constants/Constants';
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import InputText from '../components/InputText';
 import { ButtonCom } from '../components/ButtonCom';
+import database from '@react-native-firebase/database';
 
 //@ts-ignore
 const RegisterScreen = ({ navigation }) => {
@@ -53,12 +53,9 @@ const RegisterScreen = ({ navigation }) => {
                     email: email,
                     conPassword: conPassword,
                 };
-                const jsonVal = JSON.stringify(userData);
-                await AsyncStorage.setItem('UserData', jsonVal, () => {
-                    // console.log('Registration Successfull');
-                    Alert.alert(APPNAME, 'Registration Successfull ✅');
-                    navigation.goBack();
-                });
+                await database().ref('/UserData/' + mobile).set(userData);
+                navigation.goBack();
+                Alert.alert(APPNAME, 'Registration Successfull. ✅');
             } else {
                 Alert.alert(APPNAME, 'Some fields are incorrect or empty ❌');
             }
@@ -102,7 +99,7 @@ const RegisterScreen = ({ navigation }) => {
                             setValue={setEmail}
                         />
                         {
-                            !email || !/^[a-z]+@[a-z]+.[a-z]{3}$/.test(email) ? <Text style={Styling.validStyle} >*Invalid Email</Text> : null
+                            !email || !/^[a-z]+@[a-z]+.[a-z]{3}$/.test(email) ? <Text style={Styling.validStyle} >*Invalid Email (must not contain uppercases.)</Text> : null
                         }
 
                         <InputText
