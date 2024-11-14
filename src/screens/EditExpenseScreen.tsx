@@ -2,81 +2,109 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { ButtonCom } from '../components/ButtonCom';
 import InputText from '../components/InputText';
-import { APPNAME, StorageKey } from '../constants/Constants';
+import { APPNAME } from '../constants/Constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 
 //@ts-ignore
 const EditExpenseScreen = ({ route, navigation }) => {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [note, setNote] = useState('');
-    const [index, setIndex] = useState(0);
+    const [id, setId] = useState('');
 
-    useEffect(()=> {
+    useEffect(() => {
         setAmount(route.params?.item.amount);
         setCategory(route.params?.item.category);
         setNote(route.params?.item.note);
-        setIndex(route.params?.index);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        setId(route.params?.item.id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const DeleteItem = async (ind: number) => {
-        // console.log(index);
-        // console.log(item);
-        ind = index;
-        try {
-            const existingData = await AsyncStorage.getItem(StorageKey);
-            // console.log(JSON.parse(existingData!));
-            const res = JSON.parse(existingData!);
-            /*const upRes =*/ res.splice(ind, 1);
-            // console.log('*/*/*/*/*/*' + JSON.stringify(upRes));
-            // console.log('*/*/*/*/*/*' + JSON.stringify(res));
-            await AsyncStorage.setItem(StorageKey, JSON.stringify(res));
-            // console.log('After deleted...', res);
-            editExpense();
-        } catch (error) {
-            Alert.alert(APPNAME, 'Something went worng! ❌');
-        }
+    // const DeleteItem = async (ind: number) => {
+    //     // console.log(index);
+    //     // console.log(item);
+    //     ind = index;
+    //     try {
+    //         const existingData = await AsyncStorage.getItem(StorageKey);
+    //         // console.log(JSON.parse(existingData!));
+    //         const res = JSON.parse(existingData!);
+    //         /*const upRes =*/ res.splice(ind, 1);
+    //         // console.log('*/*/*/*/*/*' + JSON.stringify(upRes));
+    //         // console.log('*/*/*/*/*/*' + JSON.stringify(res));
+    //         await AsyncStorage.setItem(StorageKey, JSON.stringify(res));
+    //         // console.log('After deleted...', res);
+    //         editExpense();
+    //     } catch (error) {
+    //         Alert.alert(APPNAME, 'Something went worng! ❌');
+    //     }
 
-    };
+    // };
 
-    const editExpense = async () => {
-    //     console.log(item);
+    // const editExpense = async () => {
+    // //     console.log(item);
+    //     if (!amount || !category) {
+    //         Alert.alert(APPNAME, '*Please enter expense detail!');
+    //     } else {
+    //         // console.log('complete delete please check');
+    //         // navigation.goBack();
+    //         try {
+    //             const date = new Date();
+    //             let expData = {
+    //                 amount: amount,
+    //                 category: category,
+    //                 note: note,
+    //                 date: date.toLocaleString(),
+    //             };
+    //             const existingData = await AsyncStorage.getItem(StorageKey);
+    //             // console.log('Before edit' + existingData);
+    //             // console.log(typeof existingData);
+    //             const jsonVal = JSON.parse(existingData!);
+
+    //             let newExpArray = [ expData ];
+    //             newExpArray.push(...jsonVal);
+    //             // console.log(newExpArray);
+
+    //             // let newExpArray = [...jsonVal];
+    //             // // console.log(newExpArray);
+    //             // newExpArray.unshift(expData);
+    //             // console.log(newExpArray);
+    //             // console.log(JSON.stringify(newExpArray));
+    //             await AsyncStorage.setItem(StorageKey, JSON.stringify(newExpArray));
+    //             Alert.alert(APPNAME, 'Expense edited');
+    //             navigation.goBack();
+    //             setAmount('');
+    //             setCategory('');
+    //             setNote('');
+    //         } catch (error) {
+    //             console.log(error);
+    //             Alert.alert(APPNAME, 'Something went wrong! ❌');
+    //         }
+    //     }
+    // };
+
+
+    const EditItem = async () => {
         if (!amount || !category) {
             Alert.alert(APPNAME, '*Please enter expense detail!');
         } else {
-            // console.log('complete delete please check');
-            // navigation.goBack();
             try {
                 const date = new Date();
-                let expData = {
+                const mobile = await AsyncStorage.getItem('Mobile');
+                const expData = {
                     amount: amount,
                     category: category,
                     note: note,
                     date: date.toLocaleString(),
                 };
-                const existingData = await AsyncStorage.getItem(StorageKey);
-                // console.log('Before edit' + existingData);
-                // console.log(typeof existingData);
-                const jsonVal = JSON.parse(existingData!);
-
-                let newExpArray = [ expData ];
-                newExpArray.push(...jsonVal);
-                // console.log(newExpArray);
-
-                // let newExpArray = [...jsonVal];
-                // // console.log(newExpArray);
-                // newExpArray.unshift(expData);
-                // console.log(newExpArray);
-                // console.log(JSON.stringify(newExpArray));
-                await AsyncStorage.setItem(StorageKey, JSON.stringify(newExpArray));
+                await database().ref('/UserData/' + mobile + '/ExpenseData/').child(id).update(expData);
                 Alert.alert(APPNAME, 'Expense edited');
-                navigation.goBack();
                 setAmount('');
                 setCategory('');
                 setNote('');
+                navigation.goBack();
             } catch (error) {
-                console.log(error);
+                console.error(error);
                 Alert.alert(APPNAME, 'Something went wrong! ❌');
             }
         }
@@ -103,7 +131,7 @@ const EditExpenseScreen = ({ route, navigation }) => {
                 keyboardType={'default'}
             />
 
-            <ButtonCom title={'Edit Expense'} onClick={DeleteItem} />
+            <ButtonCom title={'Edit Expense'} onClick={EditItem} />
             {/* <ButtonCom title={'Route Data'} onClick={getRouteData} /> */}
             {/* <ButtonCom title={'Get Expense'} onClick={getExistingExp} />
             <ButtonCom title={'Remove Expense'} onClick={async () => {
