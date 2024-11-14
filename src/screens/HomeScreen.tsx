@@ -1,34 +1,56 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, FlatList } from 'react-native';
-import { APPNAME, StorageKey } from '../constants/Constants';
+import { APPNAME } from '../constants/Constants';
 import ExpenseItem from '../components/ExpenseItem';
+import database from '@react-native-firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //@ts-ignore
 const HomeScreen = ({ navigation }) => {
     const [data, setData] = useState([]);
     const [show, setShow] = useState(false);
 
-    // useEffect(() => {
-    //     getExistingExp();
-    // });
+    useEffect(() => {
+        getExistingExp();
+    });
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             getExistingExp();
         });
         return unsubscribe;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigation]);
 
     const getExistingExp = async () => {
         try {
-            const existingData = await AsyncStorage.getItem(StorageKey);
-            // console.log(JSON.parse(existingData!));
-            const res = JSON.parse(existingData!);
-            if (res) {
-                setData(res);
-                setShow(true);
-            }
+            const mobile = await AsyncStorage.getItem('Mobile');
+            await database().ref('/UserData/').once('value')
+                .then(snapshot => {
+                    if (snapshot.hasChild(mobile!)) {
+                        database().ref('/UserData/' + mobile + '/ExpenseData/').on('value', snap => {
+                            //@ts-ignore
+                            const fetchData = [];
+                            //@ts-ignore
+                            snap.forEach(child => {
+                                fetchData.push({
+                                    id: child.key,
+                                    ...child.val(),
+                                });
+                            });
+                            //@ts-ignore
+                            setData(fetchData);
+                            if (data.length === 0) {
+                                setShow(false);
+                            } else {
+                                setShow(true);
+                            }
+                            // console.log(JSON.stringify(data));
+                        });
+                    } else {
+                        console.log('No');
+                    }
+                });
         } catch (error) {
             console.error(error);
             Alert.alert(APPNAME, 'Something went wrong! ❌');
@@ -42,17 +64,20 @@ const HomeScreen = ({ navigation }) => {
             <Text style={Styling.abtTxt} >Expenses</Text>
             <View style={Styling.container1} >
                 {
-                    !show ? <Text style={Styling.noExp} >Hurrey! No expenses yet.</Text>
-                        : <FlatList
+                    show ?
+                        <FlatList
                             data={data}
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item, index }) =>
+                            // @ts-ignore
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) =>
                                 <View>
                                     {/* @ts-ignore */}
-                                    <ExpenseItem index={index} item={item} amount={item.amount} category={item.category} date={item.date} note={item.note} />
+                                    <ExpenseItem id={item.id} item={item} amount={item.amount} category={item.category} date={item.date} note={item.note} />
                                 </View>
                             }
                         />
+                        :
+                        <Text style={Styling.noExp} >Hurrey! No expenses yet.</Text>
                 }
             </View>
         </View>
