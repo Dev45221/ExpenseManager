@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import InputText from '../components/InputText';
 import { ButtonCom } from '../components/ButtonCom';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StackActions } from '@react-navigation/native';
 
 //@ts-ignore
 const LoginScreen = ({ navigation }) => {
@@ -36,13 +37,16 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const login = () => {
-        if (!email || !password) {
+        // console.log(email.trim() === '');
+        // console.log(password);
+        if (email.trim() === '' || password.trim() === '') {
             Alert.alert(APPNAME, 'All fields are required! ❌');
-        }
-
-        if (email === storedEmail && password === storedPassword) {
+        } else if (email === storedEmail && password === storedPassword) {
             Alert.alert(APPNAME, 'Successfully logged in ✅');
-            navigation.navigate('Dashboard');
+            // navigation.navigate('Dashboard');
+            navigation.dispatch(
+                StackActions.replace('Dashboard')
+            );
         } else {
             Alert.alert(APPNAME, 'Email or Password is incorrect! ❌');
         }
