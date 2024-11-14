@@ -13,33 +13,37 @@ const AuthenticationNavigation = () => {
     const [show, setShow] = useState(true);
     const [auth, setAuth] = useState(false);
 
-    useEffect(()=> {
+    useEffect(() => {
         checkUser();
         setTimeout(() => {
             setShow(false);
         }, 3000);
     });
 
-    const checkUser = async ()=> {
+    const checkUser = async () => {
         try {
-            const jsonVal = await AsyncStorage.getItem('UserData');
-            const obj = JSON.parse(jsonVal!);
-            const { email } = obj;
+            const mobile = await AsyncStorage.getItem('Mobile');
+            // console.log(mobile);
+            // await AsyncStorage.removeItem('Mobile');
+
+            const data = await AsyncStorage.getItem('UserData');
+            const jsonVal = JSON.parse(data!);
+            const { email } = jsonVal;
 
             if (email === null) {
                 console.log('New');
-            } else if (email != null || email !== undefined) {
+            } else if ((email != null || email !== undefined) && (mobile != null || mobile !== undefined)) {
                 setAuth(true);
             }
 
         } catch (error) {
-            // console.log(error);
+            console.log(error);
             // Alert.alert(APPNAME, 'Something went wrong. ❌');
         }
     };
 
     if (show) {
-        return(
+        return (
             <Stack.Navigator>
                 <Stack.Screen name={'Splash'} component={SplashScreen} options={{ headerShown: false }} />
             </Stack.Navigator>
@@ -56,10 +60,12 @@ const AuthenticationNavigation = () => {
 
     return (
         <Stack.Navigator initialRouteName={'Login'} >
-            <Stack.Screen name={'Login' }component={LoginScreen} options={{ headerShown: false }} />
-            <Stack.Screen name={'Register'} component={RegisterScreen} options={{ headerShown: false }} />
-            <Stack.Screen name={'Dashboard'} component={DashboardTabNavigation} options={{ headerShown: false }} />
-            <Stack.Screen name={'Forgot Password'} component={ForgotPasswordScreen} />
+            <Stack.Group>
+                <Stack.Screen name={'Login'} component={LoginScreen} options={{ headerShown: false }} />
+                <Stack.Screen name={'Register'} component={RegisterScreen} options={{ headerShown: false }} />
+                <Stack.Screen name={'Forgot Password'} component={ForgotPasswordScreen} />
+                <Stack.Screen name={'Dashboard'} component={DashboardTabNavigation} options={{ headerShown: false }} />
+            </Stack.Group>
         </Stack.Navigator>
     );
 };
