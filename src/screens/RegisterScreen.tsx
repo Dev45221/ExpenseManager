@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import InputText from '../components/InputText';
 import { ButtonCom } from '../components/ButtonCom';
 import database from '@react-native-firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //@ts-ignore
 const RegisterScreen = ({ navigation }) => {
@@ -49,13 +50,23 @@ const RegisterScreen = ({ navigation }) => {
             if (error === '') {
                 const userData = {
                     name: name,
+                    email: email,
+                };
+                const data = {
+                    name: name,
                     mobile: mobile,
                     email: email,
                     conPassword: conPassword,
                 };
                 await database().ref('/UserData/' + mobile).set(userData);
-                navigation.goBack();
-                Alert.alert(APPNAME, 'Registration Successfull. ✅');
+                await AsyncStorage.setItem('Mobile', mobile, ()=> {
+                    console.log('done');
+                    Alert.alert(APPNAME, 'Registration Successfull. ✅');
+                });
+                await AsyncStorage.setItem('UserData', JSON.stringify(data), ()=> {
+                    console.log('User Registered');
+                    navigation.goBack();
+                });
             } else {
                 Alert.alert(APPNAME, 'Some fields are incorrect or empty ❌');
             }
