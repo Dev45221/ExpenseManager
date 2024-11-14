@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
 import InputText from '../components/InputText';
 import { useState } from 'react';
 import { ButtonCom } from '../components/ButtonCom';
-import { APPNAME, StorageKey } from '../constants/Constants';
+import database from '@react-native-firebase/database';
+import { APPNAME } from '../constants/Constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //@ts-ignore
@@ -11,28 +12,15 @@ const AddExpenseScreen = ({ navigation }) => {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [note, setNote] = useState('');
-    let expArray = [];
 
-    // const getExistingExp = async () => {
-    //     try {
-    //         const existingData = await AsyncStorage.getItem(StorageKey);
-    //         if (existingData) {
-    //             // console.log(existingData);
-    //             // console.log(typeof existingData);
-    //             const jsonVal = JSON.parse(existingData);
-    //             console.log(jsonVal);
-    //             // console.log(typeof jsonVal);
-    //             // return jsonVal;
-    //         } else {
-    //             console.log('Nhi hai kuch', existingData);
-    //         }
-
-    //         // return existingData ? JSON.parse(existingData) : {};
-    //     } catch (error) {
-    //         Alert.alert(APPNAME, 'Something went wrong! ❌');
-    //         return {};
-    //     }
-    // };
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            setAmount('');
+            setCategory('');
+            setNote('');
+        });
+        return unsubscribe;
+    }, [navigation]);
 
     const AddExpense = async () => {
 
@@ -47,46 +35,25 @@ const AddExpenseScreen = ({ navigation }) => {
                     note: note,
                     date: date.toLocaleString(),
                 };
-                const existingData = await AsyncStorage.getItem(StorageKey);
-                if (existingData) {
-                    // console.log(existingData);
-                    // console.log(typeof existingData);
-                    const jsonVal = JSON.parse(existingData);
-                    // console.log(jsonVal);
-
-                    expData = {
-                        amount: amount,
-                        category: category,
-                        note: note,
-                        date: date.toLocaleString(),
-                    };
-                    // console.log(expData);
-
-                    let newExpArray = [expData];
-                    newExpArray.push(...jsonVal);
-                    // console.log(newExpArray);
-                    // console.log(newExpArray);
-                    // console.log(JSON.stringify(newExpArray));
-                    await AsyncStorage.setItem(StorageKey, JSON.stringify(newExpArray));
-                    Alert.alert(APPNAME, 'Expense added');
-                    navigation.goBack();
+                const mobile = await AsyncStorage.getItem('Mobile');
+                const existingData = await database().ref('/UserData/').once('value');
+                // console.log(JSON.stringify(existingData) + 'sdfsf');
+                if (existingData.hasChild(mobile!)) {
+                    await database().ref('/UserData/' + mobile + '/ExpenseData/').push().set(expData);
                     setAmount('');
                     setCategory('');
                     setNote('');
-                } else {
-                    expArray.push(expData);
-                    // console.log(expArray);
-                    await AsyncStorage.setItem(StorageKey, JSON.stringify(expArray));
+                    navigation.goBack();
                     Alert.alert(APPNAME, 'Expense added');
+                } else {
+                    console.log('Mobile not exist');
+                    // await database().ref('/UserData/' + mobile + '/ExpenseData/').push().set(expData);
+                    // setAmount('');
+                    // setCategory('');
+                    // setNote('');
+                    // navigation.goBack();
+                    // Alert.alert(APPNAME, 'Expense added');
                 }
-
-                // const jsonVal = JSON.parse(existingData!);
-
-                // const newExpData = [ ...jsonVal, {...expData} ];
-                // console.log(JSON.stringify(newExpData) + ' sfsfsdf');
-
-                // await AsyncStorage.setItem(StorageKey, JSON.stringify(newExpData));
-                // Alert.alert(APPNAME, 'Expense added');
             } catch (error) {
                 console.log(error);
                 Alert.alert(APPNAME, 'Something went wrong! ❌');
@@ -96,7 +63,6 @@ const AddExpenseScreen = ({ navigation }) => {
 
     return (
         <View style={Styling.container}>
-            <Text style={Styling.headTxt} >Add Expense</Text>
             <InputText
                 label={'Amount'}
                 value={amount}
@@ -117,6 +83,7 @@ const AddExpenseScreen = ({ navigation }) => {
             />
 
             <ButtonCom title={'Add Expense'} onClick={AddExpense} />
+            {/* <ButtonCom title={'Add Expense Firebase'} onClick={addExp} /> */}
             {/* <ButtonCom title={'Route Data'} onClick={getRouteData} /> */}
             {/* <ButtonCom title={'Get Expense'} onClick={getExistingExp} />
             <ButtonCom title={'Remove Expense'} onClick={async () => {
