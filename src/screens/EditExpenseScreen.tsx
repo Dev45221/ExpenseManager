@@ -9,12 +9,14 @@ import database from '@react-native-firebase/database';
 //@ts-ignore
 const EditExpenseScreen = ({ route, navigation }) => {
     const [amount, setAmount] = useState('');
+    const [expName, setExpName] = useState('');
     const [category, setCategory] = useState('');
     const [note, setNote] = useState('');
     const [id, setId] = useState('');
 
     useEffect(() => {
         setAmount(route.params?.item.amount);
+        setExpName(route.params?.item.expenseName);
         setCategory(route.params?.item.category);
         setNote(route.params?.item.note);
         setId(route.params?.item.id);
@@ -85,21 +87,35 @@ const EditExpenseScreen = ({ route, navigation }) => {
 
 
     const EditItem = async () => {
-        if (!amount || !category) {
-            Alert.alert(APPNAME, '*Please enter expense detail!');
+        if (!amount || !expName) {
+            Alert.alert(APPNAME, '*Amount and Expense Name are required!');
         } else {
             try {
                 const date = new Date();
+                const day = date.getDate();
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const year = date.getFullYear();
+
+                let hours = date.getHours();
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const minutes = date.getMinutes();
+                const meridiem = hours > 12 ? 'AM' : 'PM';
+
+                const finalDate = day + ' ' + months[date.getMonth()] + ', ' + year + '  ' + hours + ':' + minutes + ' ' + meridiem;
+
                 const mobile = await AsyncStorage.getItem('Mobile');
                 const expData = {
                     amount: amount,
+                    expenseName: expName,
                     category: category,
                     note: note,
-                    date: date.toLocaleString(),
+                    date: finalDate,
                 };
                 await database().ref('/UserData/' + mobile + '/ExpenseData/').child(id).update(expData);
                 Alert.alert(APPNAME, 'Expense edited');
                 setAmount('');
+                setExpName('');
                 setCategory('');
                 setNote('');
                 navigation.goBack();
@@ -113,10 +129,16 @@ const EditExpenseScreen = ({ route, navigation }) => {
     return (
         <View style={Styling.container}>
             <InputText
-                label={'Amount'}
+                label={'Amount*'}
                 value={amount}
                 setValue={setAmount}
                 keyboardType={'numeric'}
+            />
+            <InputText
+                label={'Expense Name*'}
+                value={expName}
+                setValue={setExpName}
+                keyboardType={'default'}
             />
             <InputText
                 label={'Category'}
