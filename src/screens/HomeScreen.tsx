@@ -72,7 +72,7 @@ const HomeScreen = ({ navigation }) => {
                             renderItem={({ item }) =>
                                 <View>
                                     {/* @ts-ignore */}
-                                    <ExpenseItem id={item.id} item={item} amount={item.amount} category={item.category} date={item.date} note={item.note} />
+                                    <ExpenseItem id={item.id} item={item} amount={item.amount} expName={item.expenseName} category={item.category} date={item.date} note={item.note} />
                                 </View>
                             }
                         />
