@@ -5,31 +5,37 @@ import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 //@ts-ignore
-const ExpenseItem = ({ index, item, amount, category, date, note }) => {
+const ExpenseItem = ({ id, item, amount, expName, category, date, note }) => {
 	const navigation = useNavigation();
+
 	return (
 		<View style={Styling.container} >
 			<View style={Styling.container2} >
-				<Text style={Styling.amount}>${amount}</Text>
-				<Text style={Styling.category}>{category}</Text>
-				<Text style={Styling.date}>{date}</Text>
+				<Text style={Styling.amount}>Amount: ${amount}</Text>
+				<Text style={Styling.amount}>Expense Name: {expName}</Text>
+				{
+					category ?
+						<Text style={Styling.category}>Category: {category}</Text>
+						: null
+				}
 				{
 					note ?
 						<Text style={Styling.date}>Note: {note}</Text>
 						: null
 				}
+				<Text style={Styling.date}>Date/Time: {date}</Text>
 			</View>
 			<View style={Styling.container3} >
 				<TouchableOpacity
 					activeOpacity={0.6}
-					onPress={()=> {
+					onPress={() => {
 						//@ts-ignore
-						navigation.navigate('Edit Expense', { item: item, index: index });
+						navigation.navigate('Edit Expense', { item: item });
 					}}
 				>
 					<MaterialIcons name={'edit'} color={'green'} size={30} />
 				</TouchableOpacity>
-				<DeleteExpense index={index} />
+				<DeleteExpense id={id} />
 			</View>
 		</View>
 	);
@@ -38,7 +44,7 @@ const ExpenseItem = ({ index, item, amount, category, date, note }) => {
 const Styling = StyleSheet.create({
 	container: {
 		flex: 1,
-		height: 120,
+		height: 160,
 		flexDirection: 'row',
 		padding: 16,
 		backgroundColor: 'white',
