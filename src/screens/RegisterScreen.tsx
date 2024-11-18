@@ -44,7 +44,7 @@ const RegisterScreen = ({ navigation }) => {
 
     };
 
-    const RegisterUser = async () => {
+    const Registration = async () => {
         checkValidation();
         try {
             if (error === '') {
@@ -59,11 +59,12 @@ const RegisterScreen = ({ navigation }) => {
                     conPassword: conPassword,
                 };
                 await database().ref('/UserData/' + mobile).set(userData);
+                await AsyncStorage.setItem('isLoggedIn', 'yes');
                 await AsyncStorage.setItem('Mobile', mobile, ()=> {
                     console.log('done');
                     Alert.alert(APPNAME, 'Registration Successfull. ✅');
                 });
-                await AsyncStorage.setItem('UserData', JSON.stringify(data), ()=> {
+                await AsyncStorage.setItem('UserData', JSON.stringify(data), () => {
                     console.log('User Registered');
                     navigation.goBack();
                 });
@@ -96,7 +97,7 @@ const RegisterScreen = ({ navigation }) => {
                         <InputText
                             value={mobile}
                             label={'Contact Number'}
-                            keyboardType={'default'}
+                            keyboardType={'phone-pad'}
                             setValue={setMobile}
                         />
                         {
@@ -137,7 +138,7 @@ const RegisterScreen = ({ navigation }) => {
                     <View style={Styling.container2} >
                         <View style={Styling.container3} >
 
-                            <ButtonCom title={'Register'} onClick={RegisterUser} />
+                            <ButtonCom title={'Register'} onClick={Registration} />
 
                             <Text style={Styling.already} >Already have an account?</Text>
                             <TouchableOpacity
